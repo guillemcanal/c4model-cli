@@ -1,0 +1,24 @@
+{
+  "name": "c4model-cli",
+  "version": "0.1.0",
+  "description": "C4Model CLI Tool",
+  "main": "c4tool.js",
+  "author": "Guillem CANAL <gcanal@greenflex.com>",
+  "license": "MIT",
+  "scripts": {
+    "build": "yarn run build-windows-x64 && yarn run build-mac-x64 && yarn run build-linux-x64",
+    "build-windows-x64": "nexe c4tool.js --target windows-x64-10.14.0 -o dist/windows-x64/c4tool",
+    "build-mac-x64": "nexe c4tool.js --target mac-x64-10.14.0 -o dist/mac-x64/c4tool",
+    "build-linux-x64": "nexe c4tool.js --target linux-x64-10.14.0 -o dist/linux-x64/c4tool"
+  },
+  "dependencies": {
+    "js-yaml": "^3.13.0",
+    "jsonpath": "^1.0.1",
+    "lodash": "^4.17.11",
+    "puppeteer-core": "^1.14.0",
+    "recursive-watch": "^1.1.4"
+  },
+  "devDependencies": {
+    "nexe": "^3.0.1"
+  }
+}
