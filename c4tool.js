@@ -62,6 +62,17 @@ const sortDiagram = (initialDiagram, actualDiagram) => {
 };
 
 /**
+ * Space out objects in a map
+ * 
+ * @param {string} diagram 
+ */
+const formatDiagram = (diagram) => {
+    const regex = /([^:])\n(\s{1,})-/g;
+
+    return diagram.replace(regex, '$1\n\n$2-');
+}
+
+/**
  * Puppeteer options used to lunch a new Chrome instance
  * 
  * @param {boolean} headless 
@@ -188,15 +199,21 @@ const updateStructurizrExpress = async (page) => {
     });
 };
 
+const zoomFitContent = async (page) => {
+    await page.evaluate(() => {
+        Structurizr.diagram.zoomFitContent();
+    });
+}
+
 /**
  * CLI action used to edit a givan diagram in Structurizr Express
  * 
  * @param {string} filename A diagram file name
  */
 const editDiagram = async (filename) => {
+    var   initialDiagram = prepareYaml(fileContent(filename));
     const browser = await launchBrowser(false);
     const page = await structurizrExpressPage(browser);
-    const initialDiagram = prepareYaml(fileContent(filename));
 
     await renderDiagramInExpress(page, initialDiagram);
     await updateStructurizrExpress(page);
@@ -206,9 +223,10 @@ const editDiagram = async (filename) => {
         const schemaPath = path.resolve(filename);
         var updatedDiagram = cleanupYaml(updatedDiagram);
             updatedDiagram = sortDiagram(initialDiagram, updatedDiagram);
+            updatedDiagram = formatDiagram(updatedDiagram);
 
         fs.writeFileSync(schemaPath, updatedDiagram);
-        console.log(`saved diagram ${schemaPath} from scructurizr express`);
+        console.log(`saved diagram ${schemaPath} from Scructurizr Express`);
 
         await exportDiagramToPNG(page, schemaPath);
     })
@@ -228,6 +246,16 @@ const editDiagram = async (filename) => {
             window.diagramToStructurizrExpress();
             window.sendDiagram(window.toYamlString());
         });
+    });
+
+    watch(filename, async (filename) => {
+        const date = (new Date).toString();
+        const yamlDiagram = prepareYaml(fileContent(filename));
+        await renderDiagramInExpress(page, yamlDiagram);
+        await updateStructurizrExpress(page);
+        await zoomFitContent(page);
+        initialDiagram = yamlDiagram;
+        console.log(`${date} re-rendering diagram in Structurizr Express`);
     });
 
     console.log('To exit, press Ctrl+C or close your browser');
